@@ -4,21 +4,24 @@ from flask_cors import CORS
 import base64
 from io import BytesIO
 from PIL import Image
-
 app=Flask(__name__)
-CORS(app)
-
-@app.route('/', methods=['GET'])
-def sayHi():
-    return "HI"
-
+cors = CORS(app, resources={r"/*": {"origins": "*"}})
+app.config['CORS_HEADERS'] = 'Content-Type'
+@app.route('/')
+def index():
+    response=jsonify({'caption': ''})
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    return response
 @app.route('/',methods=['POST'])
-def predictImageValues():
-    image_data = request.json['text']
-    image_bytes = BytesIO(base64.b64decode(image_data))
-    detection_results = fake_image_detection.detect_image(image_bytes)
-    print(detection_results)
-    return  jsonify(detection_results)
+def caption():
+    if request.method == 'POST':
+        image_data = request.json['text']
+        image_bytes = BytesIO(base64.b64decode(image_data))
+        detection_results = fake_image_detection.detect_image(image_bytes) # utility to extract features from image and guess its caption
+        print(detection_results)
+        response=jsonify(detection_results)
+        response.headers.add('Access-Control-Allow-Origin', '*')
+    return  response
 
 if __name__=='__main__':
-    app.run(host="127.0.0.9", port=8080, debug=True)
+    app.run(debug=True) #to start flask application
